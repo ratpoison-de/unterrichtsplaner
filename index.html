@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Unterrichtsplaner</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Unterrichtsplaner">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#eef0f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12101e" media="(prefers-color-scheme: dark)">
+<meta name="format-detection" content="telephone=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   UNTERRICHTSPLANER — Liquid Glass
+   Thorsten von Plotho-Kettner · PAGS Külsheim
+═══════════════════════════════════════ */
+:root {
+  --accent:     #FF4500;
+  --accent-g:   rgba(255,69,0,.28);
+  --accent-s:   rgba(255,69,0,.10);
+  --bg:         #eef0f8;
+  --card:       #ffffff;
+  --glass:      rgba(255,255,255,.82);
+  --glass-h:    rgba(255,255,255,.92);
+  --text:       #1a1a2e;
+  --muted:      #7b6fa0;
+  --strike:     #b0a8c8;
+  --border:     rgba(160,140,210,.22);
+  --shadow:     0 8px 28px rgba(80,60,140,.10);
+  --shadow-s:   0 2px 10px rgba(80,60,140,.08);
+  --radius:     18px;
+  --radius-s:   12px;
+  --input-bg:   rgba(255,255,255,.70);
+  /* Subject colors */
+  --c-de:  #3b82f6; --c-gk: #8b5cf6; --c-geo: #10b981;
+  --c-bk:  #f59e0b; --c-re: #ec4899; --c-wbs: #06b6d4;
+  --c-def: #64748b;
+}
+[data-theme="dark"] {
+  --bg:       #12101e;
+  --card:     #1e1b30;
+  --glass:    rgba(36,30,56,.90);
+  --glass-h:  rgba(50,42,72,.95);
+  --text:     #ece8ff;
+  --muted:    #8070a8;
+  --strike:   #4a3e68;
+  --border:   rgba(255,255,255,.08);
+  --shadow:   0 8px 28px rgba(0,0,0,.40);
+  --shadow-s: 0 2px 10px rgba(0,0,0,.30);
+  --input-bg: rgba(255,255,255,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;}
+body{
+  font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);
+  max-width:960px;margin:0 auto;min-height:100vh;
+  -webkit-text-size-adjust:100%;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  background-image:
+    radial-gradient(ellipse at 15% 10%,rgba(255,69,0,.07) 0%,transparent 50%),
+    radial-gradient(ellipse at 85% 85%,rgba(100,60,200,.10) 0%,transparent 50%),
+    radial-gradient(ellipse at 55% 40%,rgba(30,140,255,.06) 0%,transparent 45%);
+}
+@keyframes pulse  {0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin   {to{transform:rotate(360deg)}}
+@keyframes fadeIn {from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+
+/* ─── IPAD ─── */
+@media (min-width:640px){
+  #dayContainer{display:grid;grid-template-columns:1fr 1fr;gap:0 8px;padding:0 4px;}
+  .day-section{margin:10px 0 0;}
+  .app-footer{margin:12px 4px;}
+}
+
+/* ─── HEADER ─── */
+.app-header{
+  position:sticky;top:0;z-index:100;
+  background:var(--glass);border-bottom:1px solid var(--border);
+  padding:10px 16px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;box-shadow:var(--shadow-s);
+}
+.app-brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+.pags-logo{height:44px;width:auto;flex-shrink:0;}
+[data-theme="dark"] .pags-logo{filter:brightness(0) invert(1);}
+.app-titles{display:flex;flex-direction:column;justify-content:center;min-width:0;padding-top:22px;}
+.app-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;
+  letter-spacing:.02em;text-transform:uppercase;color:var(--accent);line-height:1;
+}
+.header-right{display:flex;align-items:center;gap:4px;}
+.hbtn{
+  background:var(--input-bg);border:1px solid var(--border);color:var(--muted);
+  cursor:pointer;padding:7px;border-radius:10px;font-size:16px;
+  display:flex;align-items:center;transition:all .18s;line-height:1;
+}
+.hbtn:active{background:var(--glass-h);color:var(--text);transform:scale(.92);}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.dot.ok  {background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5);}
+.dot.err {background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.5);}
+.dot.busy{background:var(--accent);animation:pulse 1.2s ease-in-out infinite;}
+
+/* ─── WEEK BAR ─── */
+.week-bar{
+  position:sticky;top:65px;z-index:100;background:var(--glass);
+  border-bottom:1px solid var(--border);
+  padding:5px 8px 8px;display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.nav-btn{
+  background:none;border:none;color:var(--text);font-size:22px;
+  cursor:pointer;padding:2px 12px;border-radius:10px;line-height:1;transition:all .15s;
+}
+.nav-btn:active{background:var(--glass-h);transform:scale(.9);}
+.week-label{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:.06em;color:var(--muted);min-width:120px;text-align:center;
+}
+
+/* ─── DAY SECTION ─── */
+.day-section{
+  margin:10px 12px 0;border-radius:var(--radius);overflow:hidden;
+  background:var(--glass);border:1px solid rgba(255,255,255,.55);
+  box-shadow:var(--shadow);transition:box-shadow .25s;
+}
+[data-theme="dark"] .day-section{border-color:rgba(255,255,255,.08);}
+.day-section:last-of-type{margin-bottom:0;}
+.day-header{
+  padding:14px 18px 12px;cursor:pointer;user-select:none;
+  display:flex;align-items:flex-end;justify-content:space-between;transition:background .15s;
+}
+.day-header:active{background:var(--glass-h);}
+.day-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;
+  letter-spacing:-.01em;text-transform:uppercase;line-height:1;
+}
+.day-date{font-size:11px;color:var(--muted);margin-top:3px;}
+.day-today .day-name{color:var(--accent);}
+.day-today .day-header{background:linear-gradient(135deg,var(--accent-s) 0%,transparent 80%);}
+.day-chevron{color:var(--muted);font-size:18px;line-height:1;transition:transform .25s;margin-bottom:2px;}
+.day-section.open .day-chevron{transform:rotate(90deg);}
+.day-badge{
+  background:var(--accent);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  border-radius:10px;padding:1px 7px;margin-bottom:4px;display:none;
+  box-shadow:0 2px 8px var(--accent-g);
+}
+.day-badge.visible{display:inline-block;}
+.day-content{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.day-section.open .day-content{max-height:5000px;}
+
+/* ─── LESSON CARD ─── */
+.lesson-list{padding:6px 12px 10px;}
+.lesson-card{
+  border-radius:var(--radius-s);margin-bottom:8px;
+  background:var(--input-bg);border:1px solid var(--border);
+  overflow:hidden;transition:box-shadow .2s;
+  animation:fadeIn .18s ease;
+}
+.lesson-card:last-child{margin-bottom:0;}
+.lesson-card.expanded{box-shadow:0 4px 16px var(--accent-g);}
+
+.lesson-header{
+  display:flex;align-items:center;gap:10px;padding:10px 13px;
+  cursor:pointer;user-select:none;transition:background .15s;
+}
+.lesson-header:active{background:var(--glass-h);}
+
+.period-badge{
+  background:var(--accent);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;
+  border-radius:8px;padding:2px 8px;flex-shrink:0;
+  box-shadow:0 2px 6px var(--accent-g);min-width:28px;text-align:center;
+}
+.lesson-info{flex:1;min-width:0;}
+.lesson-subject{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;
+  letter-spacing:.02em;line-height:1;
+}
+.lesson-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.lesson-topic-preview{
+  font-size:12px;color:var(--muted);font-style:italic;
+  margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.lesson-chevron{color:var(--muted);font-size:16px;transition:transform .2s;flex-shrink:0;}
+.lesson-card.expanded .lesson-chevron{transform:rotate(90deg);}
+
+/* Subject color dots */
+.subj-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+
+/* ─── LESSON DETAIL ─── */
+.lesson-detail{
+  max-height:0;overflow:hidden;transition:max-height .3s ease;
+}
+.lesson-card.expanded .lesson-detail{max-height:2000px;}
+
+.lesson-tabs{
+  display:flex;border-bottom:1px solid var(--border);
+  padding:0 13px;
+}
+.ltab{
+  background:none;border:none;color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:13px;letter-spacing:.05em;text-transform:uppercase;
+  padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .15s;
+}
+.ltab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.ltab:active{opacity:.7;}
+
+.tab-panel{display:none;padding:12px 13px 14px;}
+.tab-panel.active{display:block;}
+
+.field-label{
+  font-size:10px;font-weight:700;letter-spacing:.10em;
+  text-transform:uppercase;color:var(--accent);
+  margin-bottom:5px;margin-top:10px;
+}
+.field-label:first-child{margin-top:0;}
+.field-input,.field-area{
+  width:100%;background:var(--glass);
+  border:1.5px solid var(--border);border-radius:var(--radius-s);
+  padding:9px 12px;font-family:'Barlow',sans-serif;font-size:14px;
+  color:var(--text);outline:none;caret-color:var(--accent);
+  transition:border .15s,box-shadow .15s;
+}
+.field-input{height:38px;}
+.field-area{min-height:72px;resize:none;line-height:1.5;}
+[data-theme="dark"] .field-input,[data-theme="dark"] .field-area{
+  background:rgba(255,255,255,.05);
+}
+.field-input::placeholder,.field-area::placeholder{color:var(--muted);font-style:italic;}
+.field-input:focus,.field-area:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-s);
+}
+
+.lesson-no-slots{
+  padding:16px 13px;font-size:13px;color:var(--muted);
+  font-style:italic;text-align:center;
+}
+
+/* ─── ADD LESSON BTN ─── */
+.add-lesson-row{
+  padding:4px 12px 12px;
+}
+.add-lesson-btn{
+  width:100%;padding:9px;background:var(--accent-s);
+  border:1.5px dashed rgba(255,69,0,.35);border-radius:var(--radius-s);
+  color:var(--accent);font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;
+}
+.add-lesson-btn:active{background:var(--accent);color:#fff;transform:scale(.98);}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--card);color:var(--text);border:1px solid var(--border);
+  padding:10px 20px;border-radius:24px;font-size:13px;font-weight:500;
+  transition:transform .3s ease;z-index:999;white-space:nowrap;pointer-events:none;
+  box-shadow:var(--shadow);
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ─── SHEET ─── */
+.sheet-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(20,10,40,.50);z-index:200;align-items:flex-end;
+}
+.sheet-overlay.open{display:flex;}
+.sheet{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:24px 24px 0 0;padding:20px 22px 40px;
+  width:100%;max-height:88vh;overflow-y:auto;
+  animation:slideUp .28s ease;box-shadow:0 -8px 32px rgba(80,40,160,.15);
+}
+.handle{width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.sheet-title{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;
+  text-transform:uppercase;margin-bottom:18px;
+}
+.grp{margin-bottom:20px;}
+.grp-label{
+  font-size:11px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:7px;
+}
+.s-input{
+  width:100%;padding:10px 13px;background:var(--input-bg);
+  border:1.5px solid var(--border);border-radius:var(--radius-s);
+  font-family:'Barlow',sans-serif;font-size:14px;color:var(--text);outline:none;
+  transition:border .15s;
+}
+.s-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-s);}
+.s-note{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.55;}
+.sbtn{
+  width:100%;padding:12px;border:none;border-radius:var(--radius-s);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:16px;text-transform:uppercase;letter-spacing:.04em;
+  cursor:pointer;margin-top:6px;transition:all .15s;
+}
+.sbtn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 16px var(--accent-g);}
+.sbtn.secondary{background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);}
+.sbtn:active{transform:scale(.97);opacity:.85;}
+
+/* ─── TIMETABLE EDITOR ─── */
+.tt-day-header{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;
+  text-transform:uppercase;color:var(--accent);margin:12px 0 6px;
+  letter-spacing:.04em;
+}
+.tt-slot{
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  background:var(--input-bg);border:1px solid var(--border);
+  border-radius:var(--radius-s);padding:8px 12px;
+}
+.tt-period-num{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;
+  color:var(--accent);min-width:22px;text-align:center;
+}
+.tt-slot-info{flex:1;font-size:13px;}
+.tt-slot-subject{font-weight:600;}
+.tt-slot-meta{font-size:11px;color:var(--muted);}
+.tt-slot-del{
+  background:none;border:none;color:var(--muted);font-size:18px;
+  cursor:pointer;padding:2px 4px;border-radius:4px;line-height:1;
+}
+.tt-slot-del:active{color:#ef4444;}
+
+/* ─── QUICK ADD SLOT ─── */
+.slot-form{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;
+}
+.slot-form .s-input{padding:8px 10px;font-size:13px;}
+.slot-form select.s-input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237b6fa0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+
+/* ─── FOOTER ─── */
+.app-footer{
+  text-align:center;padding:18px 20px 28px;font-size:11px;color:var(--muted);
+  margin:12px;line-height:1.6;background:var(--glass);
+  border:1px solid rgba(255,255,255,.55);border-radius:var(--radius);
+  box-shadow:var(--shadow-s);
+}
+[data-theme="dark"] .app-footer{border-color:rgba(255,255,255,.08);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="app-brand">
+    <img class="pags-logo" src="pags_logo.png" alt="PAGS Külsheim">
+    <div class="app-titles">
+      <div class="app-name">Unterrichtsplaner</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="dot" id="driveStatus"></div>
+    <button class="hbtn" id="syncBtn" onclick="syncNow()">↻</button>
+    <button class="hbtn" onclick="toggleTheme()">◐</button>
+    <button class="hbtn" onclick="openSettings()">⚙</button>
+  </div>
+</div>
+
+<div class="week-bar">
+  <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
+  <div class="week-label" id="weekLabel"></div>
+  <button class="nav-btn" onclick="changeWeek(1)">›</button>
+</div>
+
+<div id="dayContainer"></div>
+
+<footer class="app-footer">
+  &copy; Thorsten von Plotho-Kettner &middot; PAGS Külsheim
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- Settings Sheet -->
+<div class="sheet-overlay" id="settingsSheet" onclick="closeSheetBg(event,'settingsSheet')">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Einstellungen</div>
+
+    <!-- Stundenplan -->
+    <div class="grp">
+      <div class="grp-label">Stundenplan</div>
+      <button class="sbtn secondary" onclick="openTimetable()">Stundenplan bearbeiten</button>
+    </div>
+
+    <!-- Fächer -->
+    <div class="grp">
+      <div class="grp-label">Fächer &amp; Klassen</div>
+      <div class="s-note">Fächer: <span id="subjectList"></span></div>
+      <button class="sbtn secondary" onclick="openSubjectEditor()" style="margin-top:8px;">Verwalten</button>
+    </div>
+
+    <!-- IServ -->
+    <div class="grp">
+      <div class="grp-label">IServ Backup (WebDAV)</div>
+      <div id="iservStatus" style="font-size:12px;margin-bottom:8px;"></div>
+      <input class="s-input" id="iservUrl"  type="url"      placeholder="https://iserv.meine-schule.de" style="margin-bottom:6px;">
+      <input class="s-input" id="iservUser" type="text"     placeholder="Benutzername" style="margin-bottom:6px;">
+      <input class="s-input" id="iservPass" type="password" placeholder="Passwort">
+      <div class="s-note">Sichert automatisch in dein IServ-Laufwerk.<br>Datei: <code>unterricht_backup.json</code></div>
+      <button class="sbtn primary" onclick="saveIServ()" style="margin-top:8px;">Verbinden &amp; speichern</button>
+      <button class="sbtn secondary" id="iservClearBtn" onclick="clearIServ()" style="margin-top:4px;display:none;">IServ trennen</button>
+    </div>
+
+    <!-- Daten -->
+    <div class="grp">
+      <div class="grp-label">Daten</div>
+      <button class="sbtn secondary" onclick="exportData()">Als JSON exportieren</button>
+    </div>
+
+    <button class="sbtn secondary" onclick="closeSheet('settingsSheet')">Schließen</button>
+  </div>
+</div>
+
+<!-- Timetable Sheet -->
+<div class="sheet-overlay" id="timetableSheet" onclick="closeSheetBg(event,'timetableSheet')">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Stundenplan</div>
+    <div id="timetableEditor"></div>
+
+    <!-- Add slot form -->
+    <div class="grp" style="margin-top:16px;">
+      <div class="grp-label">Stunde hinzufügen</div>
+      <div class="slot-form">
+        <select class="s-input" id="newSlotDay">
+          <option value="monday">Montag</option>
+          <option value="tuesday">Dienstag</option>
+          <option value="wednesday">Mittwoch</option>
+          <option value="thursday">Donnerstag</option>
+          <option value="friday">Freitag</option>
+        </select>
+        <select class="s-input" id="newSlotPeriod">
+          <option value="1">1. (07:45)</option>
+          <option value="2">2. (08:30)</option>
+          <option value="3">3. (09:30)</option>
+          <option value="4">4. (10:15)</option>
+          <option value="5">5. (11:15)</option>
+          <option value="6">6. (12:00)</option>
+          <option value="7">7. (13:30)</option>
+          <option value="8">8. (14:15)</option>
+        </select>
+        <select class="s-input" id="newSlotSubject"></select>
+        <input class="s-input" id="newSlotClass"  type="text" placeholder="Klasse z.B. 10b">
+        <input class="s-input" id="newSlotRoom"   type="text" placeholder="Raum (opt.)">
+        <button class="sbtn primary" onclick="addTimetableSlot()" style="margin-top:0;">+ Hinzufügen</button>
+      </div>
+    </div>
+    <button class="sbtn secondary" onclick="closeSheet('timetableSheet')">Fertig</button>
+  </div>
+</div>
+
+<!-- Subject Editor Sheet -->
+<div class="sheet-overlay" id="subjectSheet" onclick="closeSheetBg(event,'subjectSheet')">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Fächer &amp; Klassen</div>
+    <div class="grp">
+      <div class="grp-label">Fächer</div>
+      <div id="subjectTags"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input class="s-input" id="newSubject" type="text" placeholder="Neues Fach" style="flex:1;">
+        <input class="s-input" id="newSubjectColor" type="color" value="#3b82f6" style="width:44px;padding:4px;">
+        <button class="sbtn primary" onclick="addSubject()" style="width:auto;padding:10px 14px;margin-top:0;">+</button>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="grp-label">Klassen</div>
+      <div id="classTags"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input class="s-input" id="newClass" type="text" placeholder="Neue Klasse z.B. 9c" style="flex:1;">
+        <button class="sbtn primary" onclick="addClass()" style="width:auto;padding:10px 14px;margin-top:0;">+</button>
+      </div>
+    </div>
+    <button class="sbtn secondary" onclick="closeSheet('subjectSheet')">Fertig</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DATA MODEL
+════════════════════════════════════════ */
+const DAY_KEYS = ['monday','tuesday','wednesday','thursday','friday'];
+const DAY_DE   = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
+const PERIODS  = {1:'07:45',2:'08:30',3:'09:30',4:'10:15',5:'11:15',6:'12:00',7:'13:30',8:'14:15'};
+
+let app = {
+  timetable: {
+    // dayKey: [{id, period, subject, class, room, color}]
+    monday:[], tuesday:[], wednesday:[], thursday:[], friday:[]
+  },
+  lessons: {
+    // weekKey: { "dayKey_period": {topic,objectives,plan,materials,doc,homework,notes} }
+  },
+  subjects: [
+    {name:'Deutsch',        color:'#3b82f6'},
+    {name:'Gemeinschaftskunde', color:'#8b5cf6'},
+    {name:'Geographie',     color:'#10b981'},
+    {name:'Bildende Kunst', color:'#f59e0b'},
+    {name:'Religionslehre', color:'#ec4899'},
+    {name:'WBS',            color:'#06b6d4'}
+  ],
+  classes: ['9c','10b']
+};
+
+let weekOffset = 0;
+
+/* ════════════════════════════════════════
+   WEEK HELPERS
+════════════════════════════════════════ */
+function getWeekKey(off){
+  const d = new Date(); d.setDate(d.getDate()+(off||0)*7);
+  const thu = new Date(d); thu.setDate(d.getDate()-(d.getDay()||7)+4);
+  const jan1 = new Date(thu.getFullYear(),0,1);
+  const w = Math.ceil(((thu-jan1)/86400000+1)/7);
+  return `${thu.getFullYear()}-W${String(w).padStart(2,'0')}`;
+}
+function getWeekDates(off){
+  const today=new Date(); const dow=today.getDay()||7;
+  const mon=new Date(today); mon.setDate(today.getDate()-dow+1+(off||0)*7);
+  return Array.from({length:5},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+}
+function fmtDate(d){ return d.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'}); }
+function fmtShort(d){ return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); }
+function isToday(d){ const n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); }
+function getWeekLabel(off){
+  const kw=getWeekKey(off).split('-W')[1];
+  const dates=getWeekDates(off);
+  return `KW ${kw} &nbsp;·&nbsp; ${fmtShort(dates[0])} – ${fmtShort(dates[4])}`;
+}
+function getLessonKey(dayKey, period){ return `${dayKey}_${period}`; }
+
+/* ════════════════════════════════════════
+   RENDER
+════════════════════════════════════════ */
+function render(){
+  document.getElementById('weekLabel').innerHTML = getWeekLabel(weekOffset);
+  const weekKey = getWeekKey(weekOffset);
+  const dates   = getWeekDates(weekOffset);
+  const container = document.getElementById('dayContainer');
+
+  // Preserve open state
+  const openDays = {}, openLessons = {};
+  container.querySelectorAll('.day-section').forEach(s=>{
+    openDays[s.dataset.day] = s.classList.contains('open');
+  });
+  container.querySelectorAll('.lesson-card').forEach(c=>{
+    openLessons[c.dataset.lkey] = c.classList.contains('expanded');
+  });
+
+  container.innerHTML = '';
+
+  DAY_KEYS.forEach((dayKey, i)=>{
+    const date     = dates[i];
+    const today    = isToday(date);
+    const slots    = app.timetable[dayKey] || [];
+    const wasOpen  = openDays[dayKey] !== undefined ? openDays[dayKey] : today;
+    const doneCnt  = slots.filter(s=>{ const ld=getLessonData(weekKey,dayKey,s.period); return ld&&ld.doc&&ld.doc.trim(); }).length;
+
+    const sec = document.createElement('div');
+    sec.className = 'day-section' + (wasOpen ? ' open' : '');
+    sec.dataset.day = dayKey;
+
+    // Build lesson cards HTML
+    const lessonsHTML = slots.length===0
+      ? `<div class="lesson-no-slots">Keine Stunden — Stundenplan unter ⚙ einrichten</div>`
+      : slots.sort((a,b)=>a.period-b.period).map(slot=>{
+          const lkey   = getLessonKey(dayKey, slot.period);
+          const ld     = getLessonData(weekKey, dayKey, slot.period);
+          const wasExp = openLessons[lkey] || false;
+          const activeTab = 'plan'; // default tab
+          return lessonCardHTML(lkey, slot, ld, wasExp, weekKey, dayKey);
+        }).join('');
+
+    sec.innerHTML = `
+      <div class="day-header ${today?'day-today':''}" onclick="toggleDay('${dayKey}')">
+        <div>
+          <div class="day-name">${DAY_DE[i]}</div>
+          <div class="day-date">${fmtDate(date)}${today?' &mdash; <b>Heute</b>':''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${doneCnt>0?`<span class="day-badge visible">${doneCnt} dok.</span>`:''}
+          <span class="day-chevron">›</span>
+        </div>
+      </div>
+      <div class="day-content">
+        <div class="lesson-list">${lessonsHTML}</div>
+      </div>`;
+
+    container.appendChild(sec);
+  });
+}
+
+function lessonCardHTML(lkey, slot, ld, expanded, weekKey, dayKey){
+  const subj = app.subjects.find(s=>s.name===slot.subject) || {color:'#64748b'};
+  const topic = ld&&ld.topic ? ld.topic : '';
+  return `<div class="lesson-card${expanded?' expanded':''}" data-lkey="${lkey}" data-wk="${weekKey}" data-day="${dayKey}" data-period="${slot.period}">
+    <div class="lesson-header" onclick="toggleLesson(this.parentElement)">
+      <div class="subj-dot" style="background:${subj.color}"></div>
+      <div class="period-badge">${slot.period}</div>
+      <div class="lesson-info">
+        <div class="lesson-subject" style="color:${subj.color}">${esc(slot.subject)}</div>
+        <div class="lesson-meta">${esc(slot.class||'')}${slot.room?' · '+esc(slot.room):''}${slot.time?' · '+slot.time:''}</div>
+        ${topic?`<div class="lesson-topic-preview">${esc(topic)}</div>`:''}
+      </div>
+      <span class="lesson-chevron">›</span>
+    </div>
+    <div class="lesson-detail">
+      <div class="lesson-tabs">
+        <button class="ltab active" onclick="switchTab(event,'plan','${lkey}')">📋 Planung</button>
+        <button class="ltab" onclick="switchTab(event,'doc','${lkey}')">📝 Dokumentation</button>
+      </div>
+      <div class="tab-panel active" id="tab-plan-${lkey}">
+        <div class="field-label">Thema</div>
+        <input class="field-input" type="text" placeholder="Heutiges Thema…"
+          value="${esc(ld&&ld.topic||'')}"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','topic',this.value)">
+        <div class="field-label">Lernziele</div>
+        <textarea class="field-area" placeholder="Was sollen die Schüler heute lernen…"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','objectives',this.value)"
+          oninput="autoResize(this)">${esc(ld&&ld.objectives||'')}</textarea>
+        <div class="field-label">Verlaufsplanung</div>
+        <textarea class="field-area" style="min-height:90px;" placeholder="Geplanter Unterrichtsverlauf…"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','plan',this.value)"
+          oninput="autoResize(this)">${esc(ld&&ld.plan||'')}</textarea>
+        <div class="field-label">Materialien</div>
+        <textarea class="field-area" placeholder="Benötigte Materialien, Medien…"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','materials',this.value)"
+          oninput="autoResize(this)">${esc(ld&&ld.materials||'')}</textarea>
+      </div>
+      <div class="tab-panel" id="tab-doc-${lkey}">
+        <div class="field-label">Verlauf &amp; Beobachtungen</div>
+        <textarea class="field-area" style="min-height:90px;" placeholder="Was ist tatsächlich passiert…"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','doc',this.value)"
+          oninput="autoResize(this)">${esc(ld&&ld.doc||'')}</textarea>
+        <div class="field-label">Hausaufgaben</div>
+        <input class="field-input" type="text" placeholder="Aufgegebene Hausaufgaben…"
+          value="${esc(ld&&ld.homework||'')}"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','homework',this.value)">
+        <div class="field-label">Notizen</div>
+        <textarea class="field-area" placeholder="Weitere Notizen, Auffälligkeiten…"
+          onblur="saveField('${weekKey}','${dayKey}','${slot.period}','notes',this.value)"
+          oninput="autoResize(this)">${esc(ld&&ld.notes||'')}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function getLessonData(weekKey, dayKey, period){
+  const wk = app.lessons[weekKey];
+  if(!wk) return null;
+  return wk[getLessonKey(dayKey,period)] || null;
+}
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ════════════════════════════════════════
+   ACTIONS
+════════════════════════════════════════ */
+function toggleDay(key){
+  const sec = document.querySelector(`.day-section[data-day="${key}"]`);
+  sec.classList.toggle('open');
+}
+
+function toggleLesson(card){
+  card.classList.toggle('expanded');
+}
+
+function switchTab(e, tabName, lkey){
+  const detail = e.target.closest('.lesson-detail');
+  detail.querySelectorAll('.ltab').forEach(t=>t.classList.remove('active'));
+  detail.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  const panel = document.getElementById(`tab-${tabName}-${lkey}`);
+  if(panel) panel.classList.add('active');
+}
+
+function saveField(weekKey, dayKey, period, field, value){
+  if(!app.lessons[weekKey]) app.lessons[weekKey] = {};
+  const lkey = getLessonKey(dayKey, period);
+  if(!app.lessons[weekKey][lkey]) app.lessons[weekKey][lkey] = {};
+  app.lessons[weekKey][lkey][field] = value.trim();
+  // Update preview
+  if(field==='topic'){
+    const card = document.querySelector(`[data-lkey="${lkey}"]`);
+    if(card){
+      let preview = card.querySelector('.lesson-topic-preview');
+      if(value.trim()){
+        if(!preview){
+          const info = card.querySelector('.lesson-info');
+          preview = document.createElement('div');
+          preview.className = 'lesson-topic-preview';
+          info.appendChild(preview);
+        }
+        preview.textContent = value.trim();
+      } else if(preview){ preview.remove(); }
+    }
+  }
+  schedule();
+}
+
+function autoResize(el){ el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+function changeWeek(dir){ weekOffset+=dir; render(); }
+
+/* ════════════════════════════════════════
+   TIMETABLE EDITOR
+════════════════════════════════════════ */
+function openTimetable(){
+  renderTimetableEditor();
+  closeSheet('settingsSheet');
+  document.getElementById('timetableSheet').classList.add('open');
+  populateSubjectSelect();
+}
+
+function renderTimetableEditor(){
+  const el = document.getElementById('timetableEditor');
+  el.innerHTML = DAY_KEYS.map((key,i)=>{
+    const slots = (app.timetable[key]||[]).sort((a,b)=>a.period-b.period);
+    const slotsHTML = slots.length===0
+      ? '<div style="font-size:12px;color:var(--muted);padding:4px 0;">Keine Stunden</div>'
+      : slots.map(s=>{
+          const subj = app.subjects.find(sub=>sub.name===s.subject)||{color:'#64748b'};
+          return `<div class="tt-slot">
+            <div class="tt-period-num">${s.period}</div>
+            <div class="tt-slot-info">
+              <div class="tt-slot-subject" style="color:${subj.color}">${esc(s.subject)}</div>
+              <div class="tt-slot-meta">${esc(s.class||'')}${s.room?' · '+esc(s.room):''}  ${PERIODS[s.period]||''}</div>
+            </div>
+            <button class="tt-slot-del" onclick="deleteSlot('${key}','${s.id}')">×</button>
+          </div>`;
+        }).join('');
+    return `<div class="tt-day-header">${DAY_DE[i]}</div>${slotsHTML}`;
+  }).join('');
+}
+
+function populateSubjectSelect(){
+  const sel = document.getElementById('newSlotSubject');
+  sel.innerHTML = app.subjects.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+}
+
+function addTimetableSlot(){
+  const day     = document.getElementById('newSlotDay').value;
+  const period  = parseInt(document.getElementById('newSlotPeriod').value);
+  const subject = document.getElementById('newSlotSubject').value;
+  const cls     = document.getElementById('newSlotClass').value.trim();
+  const room    = document.getElementById('newSlotRoom').value.trim();
+  if(!subject||!cls){ toast('Bitte Fach und Klasse eingeben'); return; }
+  if(!app.timetable[day]) app.timetable[day]=[];
+  // Remove existing slot for this period
+  app.timetable[day] = app.timetable[day].filter(s=>s.period!==period);
+  app.timetable[day].push({id:newId(),period,subject,class:cls,room,time:PERIODS[period]||''});
+  document.getElementById('newSlotClass').value='';
+  document.getElementById('newSlotRoom').value='';
+  renderTimetableEditor();
+  render();
+  schedule();
+  toast('Stunde hinzugefügt');
+}
+
+function deleteSlot(dayKey, id){
+  app.timetable[dayKey]=(app.timetable[dayKey]||[]).filter(s=>s.id!==id);
+  renderTimetableEditor();
+  render();
+  schedule();
+}
+
+/* ════════════════════════════════════════
+   SUBJECT / CLASS EDITOR
+════════════════════════════════════════ */
+function openSubjectEditor(){
+  renderSubjectEditor();
+  closeSheet('settingsSheet');
+  document.getElementById('subjectSheet').classList.add('open');
+}
+
+function renderSubjectEditor(){
+  const tags = document.getElementById('subjectTags');
+  tags.innerHTML = app.subjects.map((s,i)=>`
+    <span style="display:inline-flex;align-items:center;gap:4px;background:${s.color}22;
+      border:1.5px solid ${s.color};border-radius:20px;padding:3px 10px;margin:3px;font-size:13px;font-weight:600;color:${s.color}">
+      ${esc(s.name)}
+      <button onclick="removeSubject(${i})" style="background:none;border:none;color:${s.color};font-size:14px;cursor:pointer;line-height:1;padding:0 2px;">×</button>
+    </span>`).join('');
+  const cTags = document.getElementById('classTags');
+  cTags.innerHTML = app.classes.map((c,i)=>`
+    <span style="display:inline-flex;align-items:center;gap:4px;background:var(--accent-s);
+      border:1.5px solid rgba(255,69,0,.35);border-radius:20px;padding:3px 10px;margin:3px;font-size:13px;font-weight:600;color:var(--accent)">
+      ${esc(c)}
+      <button onclick="removeClass(${i})" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;line-height:1;padding:0 2px;">×</button>
+    </span>`).join('');
+  // Update settings list
+  const sl = document.getElementById('subjectList');
+  if(sl) sl.textContent = app.subjects.map(s=>s.name).join(', ');
+}
+
+function addSubject(){
+  const name  = document.getElementById('newSubject').value.trim();
+  const color = document.getElementById('newSubjectColor').value;
+  if(!name){ toast('Bitte Fachname eingeben'); return; }
+  if(app.subjects.find(s=>s.name===name)){ toast('Fach bereits vorhanden'); return; }
+  app.subjects.push({name,color});
+  document.getElementById('newSubject').value='';
+  renderSubjectEditor(); schedule();
+}
+function removeSubject(i){ app.subjects.splice(i,1); renderSubjectEditor(); schedule(); }
+
+function addClass(){
+  const name = document.getElementById('newClass').value.trim();
+  if(!name){ toast('Bitte Klassenname eingeben'); return; }
+  if(app.classes.includes(name)){ toast('Klasse bereits vorhanden'); return; }
+  app.classes.push(name);
+  document.getElementById('newClass').value='';
+  renderSubjectEditor(); schedule();
+}
+function removeClass(i){ app.classes.splice(i,1); renderSubjectEditor(); schedule(); }
+
+/* ════════════════════════════════════════
+   SETTINGS SHEET
+════════════════════════════════════════ */
+function openSettings(){
+  updateIServUI();
+  const sl = document.getElementById('subjectList');
+  if(sl) sl.textContent = app.subjects.map(s=>s.name).join(', ');
+  document.getElementById('settingsSheet').classList.add('open');
+}
+function closeSheet(id){ document.getElementById(id).classList.remove('open'); }
+function closeSheetBg(e,id){ if(e.target.id===id) closeSheet(id); }
+
+/* ════════════════════════════════════════
+   ISERV
+════════════════════════════════════════ */
+function updateIServUI(){
+  const hasC = ISERV.ok;
+  document.getElementById('iservUrl').value  = ISERV.url;
+  document.getElementById('iservUser').value = ISERV.user;
+  document.getElementById('iservPass').value = '';
+  const status = document.getElementById('iservStatus');
+  if(status) status.innerHTML = hasC
+    ? `<span style="color:#22c55e">✓ Verbunden: ${url}</span>`
+    : `<span style="color:var(--muted)">Nicht verbunden</span>`;
+  const btn = document.getElementById('iservClearBtn');
+  if(btn) btn.style.display = hasC ? '' : 'none';
+}
+function saveIServ(){
+  const u   = document.getElementById('iservUrl').value.trim().replace(/\/$/,'');
+  const usr = document.getElementById('iservUser').value.trim();
+  const p   = document.getElementById('iservPass').value;
+  if(!u||!usr||!p){ toast('Bitte alle Felder ausfüllen'); return; }
+  ISERV.save(u,usr,p);
+  toast('IServ gespeichert – Backup läuft…');
+  updateIServUI();
+  schedule();
+}
+function clearIServ(){
+  ISERV.clear();
+  updateIServUI(); toast('IServ getrennt');
+}
+
+/* ════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════ */
+/* ── PWA Storage ── */
+function saveLocal(){
+  try{ localStorage.setItem('unterricht_data', JSON.stringify(app)); }catch(e){}
+  iservUpload();
+}
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem('unterricht_data');
+    if(raw){ const d=JSON.parse(raw); if(d&&d.timetable) app=d; }
+  }catch(e){}
+}
+window.plannerInit=function(){ render(); };
+
+/* ── IServ WebDAV ── */
+const ISERV={
+  get url() { return localStorage.getItem('iserv_url')||''; },
+  get user(){ return localStorage.getItem('iserv_user')||''; },
+  get pass(){ return localStorage.getItem('iserv_pass')||''; },
+  get ok()  { return !!(this.url&&this.user&&this.pass); },
+  save(u,usr,p){ localStorage.setItem('iserv_url',u); localStorage.setItem('iserv_user',usr); localStorage.setItem('iserv_pass',p); },
+  clear(){ ['iserv_url','iserv_user','iserv_pass'].forEach(k=>localStorage.removeItem(k)); }
+};
+function iservAuth(){ return 'Basic '+btoa(unescape(encodeURIComponent(ISERV.user+':'+ISERV.pass))); }
+function iservUpload(){
+  if(!ISERV.ok) return;
+  fetch(ISERV.url+'/webdav/unterricht_backup.json',
+    {method:'PUT',headers:{'Authorization':iservAuth(),'Content-Type':'application/json'},body:JSON.stringify(app)})
+    .then(r=>setDot(r.ok?'ok':'err')).catch(()=>setDot('err'));
+}
+async function iservDownload(){
+  if(!ISERV.ok) return;
+  try{
+    const r=await fetch(ISERV.url+'/webdav/unterricht_backup.json',{method:'GET',headers:{'Authorization':iservAuth()}});
+    if(!r.ok) return;
+    const remote=await r.json();
+    if(remote&&remote.timetable&&Object.keys(remote.lessons||{}).length>=Object.keys(app.lessons||{}).length){
+      app=remote; saveLocal(); render(); toast('✓ IServ-Backup wiederhergestellt');
+    }
+  }catch(e){}
+}
+
+let saveTimer=null;
+function schedule(){
+  saveLocal();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{ if(window.Android) Android.save(JSON.stringify(app)); },500);
+}
+
+/* ════════════════════════════════════════
+   MISC
+════════════════════════════════════════ */
+function toggleTheme(){
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem('unterricht_theme',next);
+}
+function setDot(s){ const el=document.getElementById('driveStatus'); el.className='dot'+(s!=='off'?' '+s:''); }
+function syncNow(){ toast('Synchronisation…'); if(window.Android) Android.save(JSON.stringify(app)); }
+function exportData(){
+  const blob=new Blob([JSON.stringify(app,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='unterricht_export.json'; a.click(); toast('Exportiert');
+}
+function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+
+let _tt;
+function toast(msg){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+(function init(){
+  const theme=localStorage.getItem('unterricht_theme')||'light';
+  document.documentElement.dataset.theme=theme;
+  loadLocal();
+  render();
+  setTimeout(iservDownload, 800);
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(e){console.warn('SW:',e);});
+  });
+}
+(function(){
+  var isIos=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isStandalone=window.navigator.standalone===true;
+  if(isIos&&!isStandalone&&!localStorage.getItem('ios_hint_up')){
+    setTimeout(function(){ toast('Tipp: Teilen ↑ → „Zum Home-Bildschirm“'); localStorage.setItem('ios_hint_up','1'); },2500);
+  }
+})();
+</script>
+</body>
+</html>
